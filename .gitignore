@@ -1,0 +1,18 @@
+# repo นี้เป็น PUBLIC — ห้ามใส่ข้อมูลข้อสอบเต็มชุด
+# ข้อมูลวิเคราะห์ (ข้อความข้อสอบ, สคริปต์, เฉลย, PDF) ให้เก็บใน repo topik1-analysis ที่เป็น PRIVATE
+*.pdf
+*.ipynb
+data/
+output/
+topik1-analysis/
+*.xlsx
+*.csv
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# เวอร์ชันเก่า (Supabase analytics) — ไม่ขึ้น repo, เว็บจริงคือ index.html ที่ root
+web/
+
+# โฟลเดอร์งานส่วนตัว (notebooks, PDF ข้อสอบ, เว็บเวอร์ชันเก่า) — ไม่ขึ้น GitHub
+private/
