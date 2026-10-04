@@ -1,24 +1,40 @@
 # koreasnakefish — TOPIK I
 
+🌐 **เว็บ:** https://khuxxondee.github.io/KoreanSnekeFish/
+
 เว็บเตรียมสอบ TOPIK I: คำศัพท์และไวยากรณ์เรียงตามความถี่ในข้อสอบจริง 10 ชุด พร้อมความหมายไทย/อังกฤษ เสียงอ่าน แฟลชการ์ด และแบบฝึกหัด
 
 ทั้งเว็บอยู่ใน `index.html` ไฟล์เดียว (หน้าเว็บ + โค้ด + ข้อมูล) — ไม่ต้อง build ไม่ต้องมีเซิร์ฟเวอร์
 
-## ขึ้นเว็บด้วย GitHub Pages
-1. Push repo นี้ขึ้น GitHub (ตั้งเป็น **Public**)
-2. Settings → Pages → Source: **Deploy from a branch** → Branch: `main` / `(root)` → Save
-3. Custom domain: `www.koreasnakefish.com` → Save
-4. ที่ผู้ให้บริการโดเมน เพิ่ม DNS: `CNAME` · Name `www` · Value `<username>.github.io`
-5. เมื่อ DNS ใช้ได้ ติ๊ก **Enforce HTTPS**
+## ไฟล์ใน repo
+| ไฟล์ | คืออะไร |
+|---|---|
+| `index.html` | ตัวเว็บทั้งหมด |
+| `ANALYTICS.md` | วิธีตั้งค่า Google Analytics 4 และวิธีดูสถิติผู้ใช้ |
+| `CREDITS.md` | แหล่งข้อมูลและเครดิต |
+| `.gitignore` | กันไม่ให้ไฟล์ส่วนตัว (`private/`) ขึ้น GitHub |
 
-อัปเดตเว็บ: แก้ `index.html` → `git add . && git commit -m "update" && git push`
+## อัปเดตเว็บ
+แก้ `index.html` แล้วรันใน PowerShell:
+```
+cd D:\project\KoreanSnekeFish
+git add .
+git commit -m "update"
+git push
+```
+GitHub Pages จะอัปเดตเว็บเองภายใน 1–2 นาที
 
-## Google Analytics
-วางโค้ด GA (gtag.js) ไว้ใน `<head>` ของ `index.html` ก่อน push
+## GitHub Pages (ตั้งไว้แล้ว)
+- Settings → Pages → Source: **Deploy from a branch** → `main` / `(root)`
+- ผูกโดเมน `www.koreasnakefish.com` (ยังไม่ได้ทำ): ใส่ใน Custom domain → ที่ผู้ให้บริการโดเมนเพิ่ม DNS `CNAME` · Name `www` · Value `khuxxondee.github.io` → พอ DNS ใช้ได้ติ๊ก **Enforce HTTPS**
+
+## สถิติผู้ใช้ (Google Analytics 4)
+โค้ด GA4 + event ของเว็บอยู่ใน `index.html` แล้ว — แค่ใส่ Measurement ID ที่ `window.KSF_GA_ID` (ตอนนี้ยังเป็น `G-XXXXXXXXXX` = ยังไม่นับ) แล้ว push
+วิธีตั้งค่าและวิธีดูสถิติทั้งหมด: [ANALYTICS.md](ANALYTICS.md)
 
 ## ข้อมูลในเว็บ
 อยู่ในแท็ก `<script id="data" type="application/json">` ของ `index.html`
-สร้างจากโปรเจกต์ `topik1-analysis` (เก็บใน repo **private** แยกต่างหาก — ดู `.gitignore`)
+สร้างจาก notebooks ใน `private/topik1-analysis/` ซึ่งเก็บไว้ในเครื่องเท่านั้น ไม่ขึ้น GitHub (ดู `.gitignore`)
 
 ## เครดิต
 ดู [CREDITS.md](CREDITS.md) — รายการคำศัพท์/ไวยากรณ์ © Tammy Korean (learning-korean.com) · ข้อสอบ © 국립국제교육원 (NIIED) · ความหมายไทยอ้างอิง krdict (CC BY-SA 2.0 KR)

@@ -4,6 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>koreasnakefish — TOPIK I</title>
+<meta name="description" content="TOPIK I vocabulary & grammar ranked by frequency in real exams — Thai & English meanings, flashcards, quizzes.">
+<!-- ===== Google Analytics 4 =====
+     ใส่ Measurement ID ของคุณแทน G-XXXXXXXXXX แล้ว push ขึ้น GitHub (วิธีดูสถิติ: ANALYTICS.md)
+     ?notrack=1 = ไม่นับเครื่องนี้ (เจ้าของเว็บ) · ?notrack=0 = นับอีกครั้ง · ?ga_debug=1 = ดูใน GA DebugView -->
+<script>
+window.KSF_GA_ID = "G-XXXXXXXXXX";
+(function () {
+  var id = window.KSF_GA_ID, q = new URLSearchParams(location.search), off = false;
+  try {
+    if (q.get("notrack") === "1") localStorage.setItem("ksf-notrack", "1");
+    if (q.get("notrack") === "0") localStorage.removeItem("ksf-notrack");
+    off = localStorage.getItem("ksf-notrack") === "1";
+  } catch (e) {}
+  var local = !/^https?:$/.test(location.protocol) || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { dataLayer.push(arguments); };
+  window.ksfGA = /^G-[A-Z0-9]{4,}$/.test(id) && id !== "G-XXXXXXXXXX" && !off && !local;
+  if (!window.ksfGA) return;
+  var s = document.createElement("script");
+  s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + id;
+  document.head.appendChild(s);
+  var cfg = {send_page_view: false};          // page_view ส่งเองตอนเปลี่ยนแท็บ (ดู go())
+  if (q.get("ga_debug") === "1") cfg.debug_mode = true;
+  gtag("js", new Date());
+  gtag("config", id, cfg);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Latin = Inter, Thai = Prompt (Regular), Korean = Gowun -->
@@ -251,6 +278,22 @@ const posEn = w => POS_EN[w.pt] || w.pt;
 const listenBadge = x => x.lf ? `<span class="lbadge" title="Mostly heard in the listening section (${x.l} of ${x.l + x.r} times)">🎧 Listening</span>` : "";
 const lrText = x => `🎧 ${x.l} · 📖 ${x.r}`;
 
+/* analytics — Google Analytics 4 (ตั้งค่าที่ <head>) */
+const TAB_TITLE = {home: "Menu", vocab: "Vocabulary", grammar: "Grammar", practice: "Practice"};
+function track(name, params = {}) {
+  if (!window.ksfGA) return;
+  try {
+    const p = {};
+    for (const [k, v] of Object.entries(params)) {
+      if (v == null) continue;
+      p[k] = typeof v === "boolean" ? String(v) : typeof v === "string" ? v.slice(0, 100) : v;
+    }
+    window.gtag("event", name, p);
+  } catch {}
+}
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const logSearch = debounce((section, q, results) => { q = q.trim(); if (q) track("search", {search_term: q.slice(0, 60), section, results}); }, 1500);
+
 /* storage (per viewer) */
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
@@ -325,6 +368,7 @@ const Speech = {
     if (!this.ok) return audioProblem("unsupported");
     const n = this.count(text);
     if (!force) this.counts.set(text, n + 1);
+    track("audio_play", {speed: n > 0 && !force ? "slow" : "normal", tab: state.tab});
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ko-KR";
     u.rate = n === 0 || force ? 1.0 : 0.6;
@@ -391,6 +435,7 @@ document.getElementById("tabs").onclick = e => { const b = e.target.closest("[da
 let keyHandler = null, quizKeys = null;
 function go(tab) {
   state.tab = tab;
+  track("page_view", {page_title: `${TAB_TITLE[tab] || tab} · koreasnakefish`, page_location: location.origin + location.pathname + location.search + "#" + tab});
   const r = state.practice.run;
   if (r && r.i >= r.qs.length) state.practice.run = null;
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-current", b.dataset.tab === tab ? "page" : "false"));
@@ -464,16 +509,17 @@ function renderVocab() {
     </div>
     <div id="vbody"></div>`;
   const q = document.getElementById("vq");
-  q.oninput = () => { v.q = q.value; v.shown = 50; v.idx = 0; v.shuffled = null; drawVocabBody(); };
-  document.getElementById("vpos").onchange = e => { v.pos = e.target.value; v.shown = 50; v.idx = 0; v.shuffled = null; renderVocab(); };
-  $app.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { v.view = b.dataset.view; v.flipped = false; renderVocab(); });
+  q.oninput = () => { logSearch("vocab", q.value, null); v.q = q.value; v.shown = 50; v.idx = 0; v.shuffled = null; drawVocabBody(); };
+  document.getElementById("vpos").onchange = e => { track("vocab_filter", {filter: "word_type", value: POS_EN[e.target.value] || "all"}); v.pos = e.target.value; v.shown = 50; v.idx = 0; v.shuffled = null; renderVocab(); };
+  $app.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { track("vocab_view", {view: b.dataset.view}); v.view = b.dataset.view; v.flipped = false; renderVocab(); });
   $app.querySelectorAll("[data-tier]").forEach(b => b.onclick = () => {
     const t = b.dataset.tier;
+    track("vocab_filter", {filter: "tier_" + t, value: v.tiers.has(t) ? "off" : "on"});
     v.tiers.has(t) ? v.tiers.delete(t) : v.tiers.add(t);
     if (!v.tiers.size) v.tiers.add(t);
     v.shown = 50; v.idx = 0; v.shuffled = null; renderVocab();
   });
-  document.getElementById("vlisten").onclick = () => { v.listen = !v.listen; v.shown = 50; v.idx = 0; v.shuffled = null; renderVocab(); };
+  document.getElementById("vlisten").onclick = () => { track("vocab_filter", {filter: "listening", value: v.listen ? "off" : "on"}); v.listen = !v.listen; v.shown = 50; v.idx = 0; v.shuffled = null; renderVocab(); };
   const ea = document.getElementById("expandAll");
   if (ea) ea.onclick = () => {
     if (v.open.size) v.open.clear(); else filteredWords().slice(0, v.shown).forEach(w => v.open.add(w.no));
@@ -494,7 +540,11 @@ function drawVocabBody() {
   }
   box.innerHTML = `<div class="vlist">${list.slice(0, v.shown).map(vocabItem).join("")}</div>
     ${list.length > v.shown ? `<div class="more"><button class="btn" id="moreBtn">Show more (${list.length - v.shown})</button></div>` : ""}`;
-  box.querySelectorAll("details[data-no]").forEach(d => d.ontoggle = () => { const n = +d.dataset.no; d.open ? v.open.add(n) : v.open.delete(n); });
+  box.querySelectorAll("details[data-no]").forEach(d => d.ontoggle = () => {
+    const n = +d.dataset.no;
+    if (d.open && !v.open.has(n)) { const w = WORDS.find(x => x.no === n); if (w) track("vocab_open", {word: w.ko, tier: w.tier, word_rank: w.rank}); }
+    d.open ? v.open.add(n) : v.open.delete(n);
+  });
   const more = document.getElementById("moreBtn");
   if (more) {
     more.onclick = () => { v.shown += 60; drawVocabBody(); };
@@ -548,6 +598,7 @@ function drawFlashcards(box, list, opts) {
   fc.onclick = flip;
   const doGrade = ok => {
     grade(w.no, ok);
+    track("flashcard_grade", {result: ok ? "got_it" : "not_yet", tier: w.tier, in_session: session});
     if (session) return opts.onGrade(ok);
     if (idx < list.length - 1) move(1); else toast("You've reached the last card 🎉");
   };
@@ -611,7 +662,7 @@ function renderGrammar() {
     </div>
     <div class="glist">${list.length ? list.map(g => grammarItem(g, s.open.has(g.id))).join("") : `<div class="empty">No grammar found.</div>`}</div>`;
   const gq = document.getElementById("gq");
-  gq.oninput = () => { s.q = gq.value; renderGrammar(); const el = document.getElementById("gq"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); };
+  gq.oninput = () => { logSearch("grammar", gq.value, null); s.q = gq.value; renderGrammar(); const el = document.getElementById("gq"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); };
   document.getElementById("gcat").onchange = e => { s.cat = e.target.value; renderGrammar(); };
   $app.querySelectorAll("[data-gtier]").forEach(b => b.onclick = () => {
     const t = b.dataset.gtier;
@@ -619,7 +670,11 @@ function renderGrammar() {
     if (!s.tiers.size) s.tiers.add(t);
     renderGrammar();
   });
-  $app.querySelectorAll("details[data-g]").forEach(d => d.ontoggle = () => { d.open ? s.open.add(d.dataset.g) : s.open.delete(d.dataset.g); });
+  $app.querySelectorAll("details[data-g]").forEach(d => d.ontoggle = () => {
+    const id = d.dataset.g;
+    if (d.open && !s.open.has(id)) { const g = GRAMMAR.find(x => String(x.id) === id); if (g) track("grammar_open", {grammar: g.p, tier: g.tier}); }
+    d.open ? s.open.add(id) : s.open.delete(id);
+  });
 }
 
 /* ======================================================
@@ -688,11 +743,16 @@ function renderPractice() {
   $app.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { p.mode = b.dataset.mode; renderPractice(); });
   $app.querySelectorAll("[data-scope]").forEach(b => b.onclick = () => { p.scope = b.dataset.scope; renderPractice(); });
   $app.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { p.n = +b.dataset.n; renderPractice(); });
-  document.getElementById("startQ").onclick = () => { p.run = {qs: buildQuiz(p.mode, p.scope, p.n), i: 0, score: 0, wrong: [], answered: false}; renderPractice(); };
+  document.getElementById("startQ").onclick = () => {
+    p.run = {qs: buildQuiz(p.mode, p.scope, p.n), i: 0, score: 0, wrong: [], answered: false, mode: p.mode, scope: p.scope};
+    track("practice_start", {mode: p.mode, scope: p.scope, questions: p.run.qs.length});
+    renderPractice();
+  };
 }
 function drawQuiz(box, run, onExit, exitLabel = "Back to practice") {
   if (run.i >= run.qs.length) {
     const pct = Math.round(run.score / run.qs.length * 100);
+    if (run.mode && !run.logged) { run.logged = true; track("practice_finish", {mode: run.mode, scope: run.scope, score: run.score, questions: run.qs.length, score_pct: pct}); }
     box.innerHTML = `<div class="quiz"><div class="card qcard" style="text-align:center">
       <div style="font-size:2.4rem">${pct >= 80 ? "🎉" : pct >= 50 ? "👍" : "💪"}</div>
       <h2 style="margin:0">${run.score} / ${run.qs.length} correct (${pct}%)</h2>
@@ -788,6 +848,7 @@ function startSession() {
       {key: "quiz", label: "Quiz"},
     ].filter(Boolean),
   };
+  track("daily_session_start", {new_words: fresh.length, due_words: due.length});
   renderHome();
 }
 function renderHome() {
@@ -852,6 +913,7 @@ function renderHome() {
 function renderSession(s) {
   const cur = s.steps[s.step];
   if (!cur) {
+    if (!s.logged) { s.logged = true; track("daily_session_complete", {new_words: s.fresh.length, due_words: s.due.length, score_pct: s.quiz && s.quiz.qs.length ? Math.round(s.quiz.score / s.quiz.qs.length * 100) : null}); }
     $app.innerHTML = `<div class="quiz"><div class="card qcard" style="text-align:center">
       <div style="font-size:2.6rem">🎉</div><h2 style="margin:0">Today's session is complete!</h2>
       <p class="sub" style="margin:0">Come back tomorrow for your review words and new words.</p>
@@ -899,7 +961,7 @@ document.getElementById("foot").innerHTML = `
     <div><b>Thai meanings:</b> checked against and partly adapted from 국립국어원 한국어-태국어 학습사전 (krdict) ·
       <a class="src-link" href="https://krdict.korean.go.kr/tha/mainAction" target="_blank" rel="noopener">krdict.korean.go.kr</a> ·
       licensed <a class="src-link" href="https://creativecommons.org/licenses/by-sa/2.0/kr/" target="_blank" rel="noopener">CC BY-SA 2.0 KR</a>. The Thai meanings on this site are shared under the same license.</div>
-    <div>Progress is saved in this browser only.</div>
+    <div>Progress is saved in this browser only. This site uses Google Analytics to count visits anonymously (no names or emails) so we can see which parts help learners most.</div>
   </div>`;
 go("home");
 </script>
