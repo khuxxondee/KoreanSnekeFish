@@ -10,7 +10,6 @@
 | ไฟล์ | คืออะไร |
 |---|---|
 | `index.html` | ตัวเว็บทั้งหมด |
-| `ANALYTICS.md` | วิธีตั้งค่า Google Analytics 4 และวิธีดูสถิติผู้ใช้ |
 | `CREDITS.md` | แหล่งข้อมูลและเครดิต |
 | `.gitignore` | กันไม่ให้ไฟล์ส่วนตัว (`private/`) ขึ้น GitHub |
 
@@ -27,10 +26,6 @@ GitHub Pages จะอัปเดตเว็บเองภายใน 1–2 
 ## GitHub Pages (ตั้งไว้แล้ว)
 - Settings → Pages → Source: **Deploy from a branch** → `main` / `(root)`
 - ผูกโดเมน `www.koreasnakefish.com` (ยังไม่ได้ทำ): ใส่ใน Custom domain → ที่ผู้ให้บริการโดเมนเพิ่ม DNS `CNAME` · Name `www` · Value `khuxxondee.github.io` → พอ DNS ใช้ได้ติ๊ก **Enforce HTTPS**
-
-## สถิติผู้ใช้ (Google Analytics 4)
-โค้ด GA4 + event ของเว็บอยู่ใน `index.html` แล้ว — แค่ใส่ Measurement ID ที่ `window.KSF_GA_ID` (ตอนนี้ยังเป็น `G-XXXXXXXXXX` = ยังไม่นับ) แล้ว push
-วิธีตั้งค่าและวิธีดูสถิติทั้งหมด: [ANALYTICS.md](ANALYTICS.md)
 
 ## ข้อมูลในเว็บ
 อยู่ในแท็ก `<script id="data" type="application/json">` ของ `index.html`
